@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             startActivity(new Intent(this, CalendarDayDecoratorActivity.class));
         } else if (selectedValue.equals(getString(R.string.customizing_custom_calendar))) {
             startActivity(new Intent(this, CustomisedCalendarActivity.class));
+        } else {
+            CalendarDialogFragment.show(getSupportFragmentManager());
         }
     }
 }

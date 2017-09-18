@@ -21,14 +21,17 @@ import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.imanoweb.calendarview.R;
 import com.stacktips.view.utils.CalendarUtils;
+
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,37 +39,84 @@ import java.util.List;
 import java.util.Locale;
 
 public class CustomCalendarView extends LinearLayout {
-    private Context mContext;
-    private View view;
-    private ImageView previousMonthButton;
-    private ImageView nextMonthButton;
-    private CalendarListener calendarListener;
-    private Calendar currentCalendar;
-    private Locale locale;
-    private Date lastSelectedDay;
-    private Typeface customTypeface;
-
-    private int firstDayOfWeek = Calendar.SUNDAY;
-    private List<DayDecorator> decorators = null;
 
     private static final String DAY_OF_WEEK = "dayOfWeek";
     private static final String DAY_OF_MONTH_TEXT = "dayOfMonthText";
     private static final String DAY_OF_MONTH_CONTAINER = "dayOfMonthContainer";
 
+    private Context mContext;
+
+    private View view;
+    private ImageView previousMonthButton;
+    private ImageView nextMonthButton;
+
+    private CalendarListener calendarListener;
+    private Calendar currentCalendar;
+    private Locale locale;
+    private Date lastSelectedDay;
+
+    private int firstDayOfWeek = Calendar.MONDAY;
+    private List<DayDecorator> decorators = null;
     private int disabledDayBackgroundColor;
     private int disabledDayTextColor;
+
     private int calendarBackgroundColor;
+
     private int selectedDayBackground;
+
     private int weekLayoutBackgroundColor;
+
     private int calendarTitleBackgroundColor;
+
     private int selectedDayTextColor;
     private int calendarTitleTextColor;
+    private int calendarTitleTextSize;
+
     private int dayOfWeekTextColor;
+    private int dayOfWeekTextSize;
     private int dayOfMonthTextColor;
+
+    private int previousDrawable;
+    private int nextDrawable;
+
     private int currentDayOfMonth;
 
     private int currentMonthIndex = 0;
     private boolean isOverflowDateVisible = true;
+
+    private DateInterceptor interceptor;
+
+    private Typeface monthTypeface;
+    private Typeface weekTypeface;
+    private Typeface dayTypeface;
+
+    private OnClickListener onDayOfMonthClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            // Extract day selected
+            final ViewGroup dayOfMonthContainer = (ViewGroup) view;
+
+            String tagId = (String) dayOfMonthContainer.getTag();
+            tagId = tagId.substring(DAY_OF_MONTH_CONTAINER.length(), tagId.length());
+
+            final TextView dayOfMonthText = view.findViewWithTag(DAY_OF_MONTH_TEXT + tagId);
+
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setFirstDayOfWeek(getFirstDayOfWeek());
+            calendar.setTime(currentCalendar.getTime());
+            calendar.set(Calendar.DAY_OF_MONTH, Integer.valueOf(dayOfMonthText.getText().toString()));
+
+            // Fire event
+            if (interceptor == null || !interceptor.intercept(calendar.getTime())) {
+                setSelectedDay(calendar.getTime());
+
+                refreshCalendar(currentCalendar);
+
+                if (calendarListener != null)
+                    calendarListener.onDateSelected(calendar.getTime());
+            }
+        }
+    };
 
     public CustomCalendarView(Context mContext) {
         this(mContext, null);
@@ -86,19 +136,122 @@ public class CustomCalendarView extends LinearLayout {
         initializeCalendar();
     }
 
+
+    @SuppressLint("DefaultLocale")
+    public void refreshCalendar(Calendar currentCalendar) {
+        this.currentCalendar = currentCalendar;
+        this.currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
+        locale = mContext.getResources().getConfiguration().locale;
+
+        // Set date title
+        initializeTitleLayout();
+
+        // Set weeks days titles
+        initializeWeekLayout();
+
+        // Initialize and set days in calendar
+        setDaysInCalendar();
+    }
+
+    public int getFirstDayOfWeek() {
+        return firstDayOfWeek;
+    }
+
+    public void setFirstDayOfWeek(int firstDayOfWeek) {
+        this.firstDayOfWeek = firstDayOfWeek;
+    }
+
+    public Date getSelectedDay() {
+        return lastSelectedDay;
+    }
+
+    public void setSelectedDay(Date currentDate) {
+        final Calendar currentCalendar = getTodaysCalendar();
+        currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
+        currentCalendar.setTime(currentDate);
+
+        // Clear previous marks
+        clearDayOfTheMonthStyle(lastSelectedDay);
+
+        // Store current values as last values
+        lastSelectedDay = currentDate;
+
+        refreshCalendar(this.currentCalendar);
+    }
+
+    public void setCalendarListener(CalendarListener calendarListener) {
+        this.calendarListener = calendarListener;
+    }
+
+    public List<DayDecorator> getDecorators() {
+        return decorators;
+    }
+
+    public void setDecorators(List<DayDecorator> decorators) {
+        this.decorators = decorators;
+    }
+
+    public boolean isOverflowDateVisible() {
+        return isOverflowDateVisible;
+    }
+
+    public void setShowOverflowDate(boolean isOverFlowEnabled) {
+        isOverflowDateVisible = isOverFlowEnabled;
+    }
+
+    public Typeface getMonthTypeface() {
+        return monthTypeface;
+    }
+
+    public void setMonthTypeface(Typeface monthTypeface) {
+        this.monthTypeface = monthTypeface;
+    }
+
+    public Typeface getWeekTypeface() {
+        return weekTypeface;
+    }
+
+    public void setWeekTypeface(Typeface weekTypeface) {
+        this.weekTypeface = weekTypeface;
+    }
+
+    public Typeface getDayTypeface() {
+        return dayTypeface;
+    }
+
+    public void setDayTypeface(Typeface dayTypeface) {
+        this.dayTypeface = dayTypeface;
+    }
+
+    public void setInterceptor(DateInterceptor interceptor) {
+        this.interceptor = interceptor;
+    }
+
     private void getAttributes(AttributeSet attrs) {
         final TypedArray typedArray = mContext.obtainStyledAttributes(attrs, R.styleable.CustomCalendarView, 0, 0);
+
         calendarBackgroundColor = typedArray.getColor(R.styleable.CustomCalendarView_calendarBackgroundColor, getResources().getColor(R.color.white));
+
         calendarTitleBackgroundColor = typedArray.getColor(R.styleable.CustomCalendarView_titleLayoutBackgroundColor, getResources().getColor(R.color.white));
         calendarTitleTextColor = typedArray.getColor(R.styleable.CustomCalendarView_calendarTitleTextColor, getResources().getColor(R.color.black));
+        calendarTitleTextSize = typedArray.getDimensionPixelSize(R.styleable.CustomCalendarView_calendarTitleTextSize, getResources().getDimensionPixelSize(R.dimen.dateTitleTextSize));
+
         weekLayoutBackgroundColor = typedArray.getColor(R.styleable.CustomCalendarView_weekLayoutBackgroundColor, getResources().getColor(R.color.white));
+
         dayOfWeekTextColor = typedArray.getColor(R.styleable.CustomCalendarView_dayOfWeekTextColor, getResources().getColor(R.color.black));
+        dayOfWeekTextSize = typedArray.getDimensionPixelSize(R.styleable.CustomCalendarView_dayOfWeekTextSize, getResources().getDimensionPixelSize(R.dimen.dayOfWeekTextSize));
+
         dayOfMonthTextColor = typedArray.getColor(R.styleable.CustomCalendarView_dayOfMonthTextColor, getResources().getColor(R.color.black));
+
         disabledDayBackgroundColor = typedArray.getColor(R.styleable.CustomCalendarView_disabledDayBackgroundColor, getResources().getColor(R.color.day_disabled_background_color));
         disabledDayTextColor = typedArray.getColor(R.styleable.CustomCalendarView_disabledDayTextColor, getResources().getColor(R.color.day_disabled_text_color));
         selectedDayBackground = typedArray.getColor(R.styleable.CustomCalendarView_selectedDayBackgroundColor, getResources().getColor(R.color.selected_day_background));
         selectedDayTextColor = typedArray.getColor(R.styleable.CustomCalendarView_selectedDayTextColor, getResources().getColor(R.color.white));
         currentDayOfMonth = typedArray.getColor(R.styleable.CustomCalendarView_currentDayOfMonthColor, getResources().getColor(R.color.current_day_of_month));
+
+        previousDrawable = typedArray.getResourceId(R.styleable.CustomCalendarView_previousDrawable, R.drawable.button_previous_month_selector);
+        nextDrawable = typedArray.getResourceId(R.styleable.CustomCalendarView_nextDrawable, R.drawable.button_next_month_selector);
+
         typedArray.recycle();
     }
 
@@ -107,6 +260,9 @@ public class CustomCalendarView extends LinearLayout {
         view = inflate.inflate(R.layout.custom_calendar_layout, this, true);
         previousMonthButton = (ImageView) view.findViewById(R.id.leftButton);
         nextMonthButton = (ImageView) view.findViewById(R.id.rightButton);
+
+        previousMonthButton.setImageResource(previousDrawable);
+        nextMonthButton.setImageResource(nextDrawable);
 
         previousMonthButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -140,27 +296,27 @@ public class CustomCalendarView extends LinearLayout {
         Locale locale = mContext.getResources().getConfiguration().locale;
         Calendar currentCalendar = Calendar.getInstance(locale);
 
-        setFirstDayOfWeek(Calendar.SUNDAY);
+        setFirstDayOfWeek(getFirstDayOfWeek());
         refreshCalendar(currentCalendar);
     }
-
 
     /**
      * Display calendar title with next previous month button
      */
     private void initializeTitleLayout() {
-        View titleLayout = view.findViewById(R.id.titleLayout);
+        final View titleLayout = view.findViewById(R.id.titleLayout);
         titleLayout.setBackgroundColor(calendarTitleBackgroundColor);
 
         String dateText = new DateFormatSymbols(locale).getShortMonths()[currentCalendar.get(Calendar.MONTH)].toString();
         dateText = dateText.substring(0, 1).toUpperCase() + dateText.subSequence(1, dateText.length());
 
-        TextView dateTitle = (TextView) view.findViewById(R.id.dateTitle);
+        final TextView dateTitle = view.findViewById(R.id.dateTitle);
         dateTitle.setTextColor(calendarTitleTextColor);
         dateTitle.setText(dateText + " " + currentCalendar.get(Calendar.YEAR));
         dateTitle.setTextColor(calendarTitleTextColor);
-        if (null != getCustomTypeface()) {
-            dateTitle.setTypeface(getCustomTypeface(), Typeface.BOLD);
+        dateTitle.setTextSize(TypedValue.COMPLEX_UNIT_PX, calendarTitleTextSize);
+        if (null != getMonthTypeface()) {
+            dateTitle.setTypeface(getMonthTypeface(), Typeface.BOLD);
         }
 
     }
@@ -184,12 +340,13 @@ public class CustomCalendarView extends LinearLayout {
                 dayOfTheWeekString = dayOfTheWeekString.substring(0, 3).toUpperCase();
             }
 
-            dayOfWeek = (TextView) view.findViewWithTag(DAY_OF_WEEK + getWeekIndex(i, currentCalendar));
+            dayOfWeek = view.findViewWithTag(DAY_OF_WEEK + getWeekIndex(i, currentCalendar));
             dayOfWeek.setText(dayOfTheWeekString);
             dayOfWeek.setTextColor(dayOfWeekTextColor);
+            dayOfWeek.setTextSize(TypedValue.COMPLEX_UNIT_PX, dayOfWeekTextSize);
 
-            if (null != getCustomTypeface()) {
-                dayOfWeek.setTypeface(getCustomTypeface());
+            if (null != getWeekTypeface()) {
+                dayOfWeek.setTypeface(getWeekTypeface());
             }
         }
     }
@@ -223,16 +380,28 @@ public class CustomCalendarView extends LinearLayout {
             dayView.bind(startCalendar.getTime(), getDecorators());
             dayView.setVisibility(View.VISIBLE);
 
-            if (null != getCustomTypeface()) {
-                dayView.setTypeface(getCustomTypeface());
+            if (null != getDayTypeface()) {
+                dayView.setTypeface(getDayTypeface());
             }
 
             if (CalendarUtils.isSameMonth(calendar, startCalendar)) {
                 dayOfMonthContainer.setOnClickListener(onDayOfMonthClickListener);
-                dayView.setBackgroundColor(calendarBackgroundColor);
-                dayView.setTextColor(dayOfWeekTextColor);
+
                 //Set the current day color
-                markDayAsCurrentDay(startCalendar);
+
+                if (getSelectedDay() != null && CalendarUtils.isSameDay(dayView.getDate(), getSelectedDay())) {
+                    dayView.setBackgroundColor(selectedDayBackground);
+                    dayView.setTextColor(selectedDayTextColor);
+                } else {
+                    dayView.setBackgroundColor(calendarBackgroundColor);
+                    if (CalendarUtils.isToday(dayView.getDate())) {
+                        dayView.setTextColor(currentDayOfMonth);
+                    } else {
+                        dayView.setTextColor(dayOfMonthTextColor);
+                    }
+                }
+
+                dayView.decorate();
             } else {
                 dayView.setBackgroundColor(disabledDayBackgroundColor);
                 dayView.setTextColor(disabledDayTextColor);
@@ -243,16 +412,14 @@ public class CustomCalendarView extends LinearLayout {
                     dayView.setVisibility(View.GONE);
                 }
             }
-            dayView.decorate();
-
 
             startCalendar.add(Calendar.DATE, 1);
             dayOfMonthIndex++;
         }
 
         // If the last week row has no visible days, hide it or show it in case
-        ViewGroup weekRow = (ViewGroup) view.findViewWithTag("weekRow6");
-        dayView = (DayView) view.findViewWithTag("dayOfMonthText36");
+        final ViewGroup weekRow = view.findViewWithTag("weekRow6");
+        dayView = view.findViewWithTag("dayOfMonthText36");
         if (dayView.getVisibility() != VISIBLE) {
             weekRow.setVisibility(GONE);
         } else {
@@ -268,7 +435,7 @@ public class CustomCalendarView extends LinearLayout {
 
             final DayView dayView = getDayOfMonthText(calendar);
             dayView.setBackgroundColor(calendarBackgroundColor);
-            dayView.setTextColor(dayOfWeekTextColor);
+            dayView.setTextColor(dayOfMonthTextColor);
             dayView.decorate();
         }
     }
@@ -327,114 +494,6 @@ public class CustomCalendarView extends LinearLayout {
     private Calendar getTodaysCalendar() {
         Calendar currentCalendar = Calendar.getInstance(mContext.getResources().getConfiguration().locale);
         currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
-        return currentCalendar;
-    }
-
-    @SuppressLint("DefaultLocale")
-    public void refreshCalendar(Calendar currentCalendar) {
-        this.currentCalendar = currentCalendar;
-        this.currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
-        locale = mContext.getResources().getConfiguration().locale;
-
-        // Set date title
-        initializeTitleLayout();
-
-        // Set weeks days titles
-        initializeWeekLayout();
-
-        // Initialize and set days in calendar
-        setDaysInCalendar();
-    }
-
-    public int getFirstDayOfWeek() {
-        return firstDayOfWeek;
-    }
-
-    public void setFirstDayOfWeek(int firstDayOfWeek) {
-        this.firstDayOfWeek = firstDayOfWeek;
-    }
-
-    public void markDayAsCurrentDay(Calendar calendar) {
-        if (calendar != null && CalendarUtils.isToday(calendar)) {
-            DayView dayOfMonth = getDayOfMonthText(calendar);
-            dayOfMonth.setTextColor(currentDayOfMonth);
-        }
-    }
-
-    public void markDayAsSelectedDay(Date currentDate) {
-        final Calendar currentCalendar = getTodaysCalendar();
-        currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
-        currentCalendar.setTime(currentDate);
-
-        // Clear previous marks
-        clearDayOfTheMonthStyle(lastSelectedDay);
-
-        // Store current values as last values
-        storeLastValues(currentDate);
-
-        // Mark current day as selected
-        DayView view = getDayOfMonthText(currentCalendar);
-        view.setBackgroundColor(selectedDayBackground);
-        view.setTextColor(selectedDayTextColor);
-    }
-
-    private void storeLastValues(Date currentDate) {
-        lastSelectedDay = currentDate;
-    }
-
-    public void setCalendarListener(CalendarListener calendarListener) {
-        this.calendarListener = calendarListener;
-    }
-
-    private OnClickListener onDayOfMonthClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            // Extract day selected
-            ViewGroup dayOfMonthContainer = (ViewGroup) view;
-            String tagId = (String) dayOfMonthContainer.getTag();
-            tagId = tagId.substring(DAY_OF_MONTH_CONTAINER.length(), tagId.length());
-            final TextView dayOfMonthText = (TextView) view.findViewWithTag(DAY_OF_MONTH_TEXT + tagId);
-
-            // Fire event
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setFirstDayOfWeek(getFirstDayOfWeek());
-            calendar.setTime(currentCalendar.getTime());
-            calendar.set(Calendar.DAY_OF_MONTH, Integer.valueOf(dayOfMonthText.getText().toString()));
-            markDayAsSelectedDay(calendar.getTime());
-
-            //Set the current day color
-            markDayAsCurrentDay(currentCalendar);
-
-            if (calendarListener != null)
-                calendarListener.onDateSelected(calendar.getTime());
-        }
-    };
-
-    public List<DayDecorator> getDecorators() {
-        return decorators;
-    }
-
-    public void setDecorators(List<DayDecorator> decorators) {
-        this.decorators = decorators;
-    }
-
-    public boolean isOverflowDateVisible() {
-        return isOverflowDateVisible;
-    }
-
-    public void setShowOverflowDate(boolean isOverFlowEnabled) {
-        isOverflowDateVisible = isOverFlowEnabled;
-    }
-
-    public void setCustomTypeface(Typeface customTypeface) {
-        this.customTypeface = customTypeface;
-    }
-
-    public Typeface getCustomTypeface() {
-        return customTypeface;
-    }
-
-    public Calendar getCurrentCalendar() {
         return currentCalendar;
     }
 }

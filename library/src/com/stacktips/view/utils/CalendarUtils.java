@@ -3,10 +3,6 @@ package com.stacktips.view.utils;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- * Created by Nilanchala Panigrahy on 8/24/16.
- */
-
 public class CalendarUtils {
 
     public static boolean isSameMonth(Calendar c1, Calendar c2) {
@@ -26,6 +22,21 @@ public class CalendarUtils {
      */
     public static boolean isToday(Calendar calendar) {
         return isSameDay(calendar, Calendar.getInstance());
+    }
+
+    public static boolean isToday(final Date date) {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        return isToday(calendar);
+    }
+
+    public static boolean isSameDay(final Date lhs, final Date rhs) {
+        final Calendar lhsCal = toCalendar(lhs);
+
+        final Calendar rhsCal = toCalendar(rhs);
+
+        return isSameDay(lhsCal, rhsCal);
     }
 
     public static boolean isSameDay(Calendar cal1, Calendar cal2) {
@@ -56,6 +67,38 @@ public class CalendarUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return (date.before(calendar.getTime())) ? true : false;
+    }
+
+    public static boolean isBetween(final Date day, final Date min, final Date max) {
+        return day.compareTo(min) >= 0 && day.compareTo(max) <= 0;
+    }
+
+    public static Date addDays(final Date date, final int days) {
+        final Calendar calendar = toCalendar(date);
+        calendar.add(Calendar.DATE, days);
+
+        return calendar.getTime();
+    }
+
+    public static Calendar toCalendar(final Date date) {
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
+    }
+
+    public static Date now() {
+        return normalize(new Date());
+    }
+
+    public static Date normalize(final Date date) {
+        final Calendar calendar = toCalendar(date);
+
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
     }
 
 }

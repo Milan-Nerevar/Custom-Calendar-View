@@ -4,10 +4,12 @@
     <string name="simple_calendar">Simple Calendar</string>
     <string name="calendar_day_decorator">Calendar Day Decorator</string>
     <string name="customizing_custom_calendar">Customizing Calendar View</string>
+    <string name="dialog_calendar">Dialog calendar</string>
 
     <array name="calendar_demos">
         <item>@string/simple_calendar</item>
         <item>@string/calendar_day_decorator</item>
         <item>@string/customizing_custom_calendar</item>
+        <item>@string/dialog_calendar</item>
     </array>
 </resources>

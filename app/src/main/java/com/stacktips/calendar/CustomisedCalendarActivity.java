@@ -77,7 +77,7 @@ public class CustomisedCalendarActivity extends AppCompatActivity {
         //Setting custom font
         final Typeface typeface = Typeface.createFromAsset(getAssets(), "fonts/Arch_Rival_Bold.ttf");
         if (null != typeface) {
-            calendarView.setCustomTypeface(typeface);
+            calendarView.setMonthTypeface(typeface);
             calendarView.refreshCalendar(currentCalendar);
         }
     }
