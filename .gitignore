@@ -1,3 +1,7 @@
+# Intellij IDEA
+.idea
+
+# Gradle
 /build
 /app/build
 /library/build
