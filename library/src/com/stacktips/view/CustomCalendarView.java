@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -52,7 +53,6 @@ public class CustomCalendarView extends LinearLayout {
 
     private CalendarListener calendarListener;
     private Calendar currentCalendar;
-    private Locale locale;
     private Date lastSelectedDay;
 
     private int firstDayOfWeek = Calendar.MONDAY;
@@ -137,11 +137,9 @@ public class CustomCalendarView extends LinearLayout {
     }
 
 
-    @SuppressLint("DefaultLocale")
     public void refreshCalendar(Calendar currentCalendar) {
         this.currentCalendar = currentCalendar;
         this.currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
-        locale = mContext.getResources().getConfiguration().locale;
 
         // Set date title
         initializeTitleLayout();
@@ -307,8 +305,7 @@ public class CustomCalendarView extends LinearLayout {
         final View titleLayout = view.findViewById(R.id.titleLayout);
         titleLayout.setBackgroundColor(calendarTitleBackgroundColor);
 
-        String dateText = new DateFormatSymbols(locale).getShortMonths()[currentCalendar.get(Calendar.MONTH)].toString();
-        dateText = dateText.substring(0, 1).toUpperCase() + dateText.subSequence(1, dateText.length());
+        final String dateText = DateUtils.formatDateTime(getContext(), currentCalendar.getTimeInMillis(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NO_MONTH_DAY | DateUtils.FORMAT_NO_YEAR);
 
         final TextView dateTitle = view.findViewById(R.id.dateTitle);
         dateTitle.setTextColor(calendarTitleTextColor);
@@ -333,12 +330,14 @@ public class CustomCalendarView extends LinearLayout {
         View titleLayout = view.findViewById(R.id.weekLayout);
         titleLayout.setBackgroundColor(weekLayoutBackgroundColor);
 
-        final String[] weekDaysArray = new DateFormatSymbols(locale).getShortWeekdays();
+        final String[] weekDaysArray = new DateFormatSymbols(Locale.getDefault()).getShortWeekdays();
         for (int i = 1; i < weekDaysArray.length; i++) {
             dayOfTheWeekString = weekDaysArray[i];
             if (dayOfTheWeekString.length() > 3) {
                 dayOfTheWeekString = dayOfTheWeekString.substring(0, 3).toUpperCase();
             }
+
+            dayOfTheWeekString = dayOfTheWeekString.substring(0,1).toUpperCase() + dayOfTheWeekString.substring(1);
 
             dayOfWeek = view.findViewWithTag(DAY_OF_WEEK + getWeekIndex(i, currentCalendar));
             dayOfWeek.setText(dayOfTheWeekString);
@@ -352,7 +351,7 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private void setDaysInCalendar() {
-        Calendar calendar = Calendar.getInstance(locale);
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
         calendar.setTime(currentCalendar.getTime());
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         calendar.setFirstDayOfWeek(getFirstDayOfWeek());
@@ -492,7 +491,7 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private Calendar getTodaysCalendar() {
-        Calendar currentCalendar = Calendar.getInstance(mContext.getResources().getConfiguration().locale);
+        Calendar currentCalendar = Calendar.getInstance(Locale.getDefault());
         currentCalendar.setFirstDayOfWeek(getFirstDayOfWeek());
         return currentCalendar;
     }

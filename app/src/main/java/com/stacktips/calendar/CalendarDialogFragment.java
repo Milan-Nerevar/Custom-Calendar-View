@@ -1,15 +1,21 @@
 package com.stacktips.calendar;
 
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 
 import com.stacktips.view.CustomCalendarView;
 import com.stacktips.view.DateInterceptor;
@@ -39,9 +45,10 @@ public class CalendarDialogFragment extends DialogFragment {
         return inflater.inflate(R.layout.fragment_dialog_calendar, container, false);
     }
 
+    @NonNull
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final View view = getActivity().getLayoutInflater().inflate(R.layout.fragment_dialog_calendar, null);
 
         calendar = view.findViewById(R.id.calendar);
 
@@ -55,12 +62,13 @@ public class CalendarDialogFragment extends DialogFragment {
             @Override
             public void decorate(DayView cell) {
                 if (calendar.getSelectedDay() != null && CalendarUtils.isSameDay(cell.getDate(), calendar.getSelectedDay())) {
-                    cell.setBackgroundResource(R.color.magenta);
+                    cell.setBackgroundResource(R.drawable.ic_calendar_active);
                 } else {
                     if (CalendarUtils.isToday(cell.getDate())) {
-                        cell.setBackgroundResource(R.color.grey);
+                        cell.setBackgroundResource(R.drawable.ic_calendar_today);
                     } else if (isBetween(cell.getDate())) {
-                        cell.setBackgroundResource(R.color.blue);
+                        cell.setBackgroundResource(R.drawable.ic_calendar_archive);
+                        cell.setTextColor(ContextCompat.getColor(getActivity(), R.color.magenta));
                     } else {
                         cell.setBackgroundResource(android.R.color.transparent);
                     }
@@ -76,6 +84,36 @@ public class CalendarDialogFragment extends DialogFragment {
         });
 
         calendar.refreshCalendar(Calendar.getInstance());
+
+        return new AlertDialog.Builder(getActivity())
+                .setView(view)
+                .setPositiveButton("Otvoriť archív",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                dismiss();
+                            }
+                        }
+                )
+                .setNegativeButton("Zrušiť",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                dialog.dismiss();
+                            }
+                        }
+                )
+                .create();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        final Window window = getDialog().getWindow();
+
+        if (window != null) {
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER);
+        }
     }
 
     private boolean isBetween(Date date) {

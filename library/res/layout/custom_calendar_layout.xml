@@ -4,13 +4,28 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD" />
+
     <include
         android:id="@+id/titleLayout"
         layout="@layout/custom_calendar_title_layout" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD" />
+
     <include
         android:id="@+id/weekLayout"
         layout="@layout/custom_calendar_weeks_layout" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD" />
 
     <LinearLayout
         android:id="@+id/daysContainer"

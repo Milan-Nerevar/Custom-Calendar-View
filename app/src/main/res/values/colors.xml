@@ -18,4 +18,6 @@
     <color name="grey">#757575</color>
 
     <color name="magenta">#e20075</color>
+
+    <color name="dialog_background">#eeeeee</color>
 </resources>

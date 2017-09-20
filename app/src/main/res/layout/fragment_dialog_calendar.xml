@@ -4,17 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:gravity="center_horizontal"
         android:text="Vyberte deň z archívu"
         android:textAlignment="gravity"
+        android:textAllCaps="true"
         android:textColor="@color/magenta"
-        android:textSize="24sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <com.stacktips.view.CustomCalendarView
         android:id="@+id/calendar"
@@ -24,11 +27,13 @@
         android:layout_marginTop="8dp"
         app:calendarBackgroundColor="@android:color/transparent"
         app:calendarTitleTextColor="@color/black"
-        app:calendarTitleTextSize="20sp"
+        app:calendarTitleTextSize="16sp"
         app:currentDayOfMonthColor="@color/grey"
         app:dayOfWeekTextColor="@color/magenta"
-        app:dayOfWeekTextSize="20sp"
+        app:dayOfWeekTextSize="18sp"
         app:disabledDayBackgroundColor="@android:color/transparent"
+        app:nextDrawable="@drawable/ic_calendar_next"
+        app:previousDrawable="@drawable/ic_calendar_prev"
         app:selectedDayBackgroundColor="@android:color/transparent"
         app:selectedDayTextColor="@android:color/white"
         app:titleLayoutBackgroundColor="@android:color/transparent"

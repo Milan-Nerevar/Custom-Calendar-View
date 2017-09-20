@@ -5,22 +5,17 @@ import java.util.Date;
 
 public class CalendarUtils {
 
-    public static boolean isSameMonth(Calendar c1, Calendar c2) {
-        if (c1 == null || c2 == null)
+    public static boolean isSameMonth(final Calendar c1, final Calendar c2) {
+        if (c1 == null || c2 == null) {
             return false;
+        }
+
         return (c1.get(Calendar.ERA) == c2.get(Calendar.ERA)
                 && c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
                 && c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH));
     }
 
-    /**
-     * <p>Checks if a calendar is today.</p>
-     *
-     * @param calendar the calendar, not altered, not null.
-     * @return true if the calendar is today.
-     * @throws IllegalArgumentException if the calendar is <code>null</code>
-     */
-    public static boolean isToday(Calendar calendar) {
+    public static boolean isToday(final Calendar calendar) {
         return isSameDay(calendar, Calendar.getInstance());
     }
 
@@ -39,7 +34,7 @@ public class CalendarUtils {
         return isSameDay(lhsCal, rhsCal);
     }
 
-    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
+    public static boolean isSameDay(final Calendar cal1, final Calendar cal2) {
         if (cal1 == null || cal2 == null)
             throw new IllegalArgumentException("The dates must not be null");
         return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
@@ -47,20 +42,7 @@ public class CalendarUtils {
                 cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
     }
 
-    public static int getTotalWeeks(Calendar calendar) {
-        if (null == calendar) return 0;
-        int maxWeeks = calendar.getActualMaximum(Calendar.WEEK_OF_MONTH);
-        return maxWeeks;
-
-    }
-
-    public static int getTotalWeeks(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return getTotalWeeks(cal);
-    }
-
-    public static boolean isPastDay(Date date) {
+    public static boolean isPastDay(final Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);

@@ -16,8 +16,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText29"
@@ -35,8 +33,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText30"
@@ -54,8 +50,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText31"
@@ -72,8 +66,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText32"
@@ -89,8 +81,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText33"
@@ -108,8 +98,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText34"
@@ -125,8 +113,6 @@
 
         <com.stacktips.view.DayView
             style="@style/CalendarView.DayOfTheMonth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:gravity="center"
             android:tag="dayOfMonthText35"
